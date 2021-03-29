@@ -1,3 +1,5 @@
+#https://codeforces.com/problemset/problem/734/b
+
 input_line = input().split()
 numbers = [int(entry) for entry in input_line]
 twos, threes, fives, sixes = numbers

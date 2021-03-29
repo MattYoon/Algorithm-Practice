@@ -1,3 +1,5 @@
+#https://codeforces.com/problemset/problem/466/c
+
 n = int(input())
 
 nums_input = input().split(" ")

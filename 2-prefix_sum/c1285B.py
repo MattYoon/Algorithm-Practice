@@ -1,3 +1,5 @@
+#https://codeforces.com/problemset/problem/1285/b
+
 def get_test():
     tmp = input().split(' ')
     return [int(i) for i in tmp]

@@ -1,3 +1,5 @@
+#https://codeforces.com/problemset/problem/160/a
+
 input()
 input_line = input().split()
 enrtries = [int(entry) for entry in input_line]

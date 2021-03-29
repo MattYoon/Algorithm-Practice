@@ -1,3 +1,5 @@
+#https://codeforces.com/problemset/problem/158/b
+
 import math
 
 input()
