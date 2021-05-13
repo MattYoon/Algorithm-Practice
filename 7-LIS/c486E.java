@@ -1,3 +1,5 @@
+//https://codeforces.com/contest/52/problem/c
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;

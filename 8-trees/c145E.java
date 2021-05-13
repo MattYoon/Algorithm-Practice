@@ -1,6 +1,9 @@
+//https://codeforces.com/contest/145/problem/E
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 public class c145E {
@@ -15,7 +18,7 @@ public class c145E {
         String s = " ".concat(br.readLine());
 
         Solver_c145E solver = new Solver_c145E(br, n, m, s);
-        System.out.print(solver.solve());
+        System.out.print(solver.solve().toString());
     }
 }
 
@@ -30,24 +33,25 @@ class Solver_c145E {
             fours = 0; sevens = 0; lis = 1; lds = 1;
         }
 
-        Node swap() {
-            Node swapped = new Node();
-            swapped.fours = sevens; swapped.sevens = fours;
-            swapped.lis = lds; swapped.lds = lis;
-            return swapped;
+        void swap() {
+            int tmp = fours;
+            fours = sevens; sevens = tmp;
+            tmp = lis;
+            lis = lds; lds = tmp;
         }
     }
 
     BufferedReader br;
-    StringTokenizer st;
 
     int n, m;
     String s;
     Node[] tree;
+    boolean[] lazy_swap;
 
     Solver_c145E(BufferedReader br, int n, int m, String s) {
         this.br = br; this.n = n; this.m = m; this.s = s;
         tree = new Node[10 * n];
+        lazy_swap = new boolean[10 * n];
     }
 
     void build_tree(int node, int left, int right) {
@@ -62,20 +66,18 @@ class Solver_c145E {
             build_tree(left_child, left, mid);
             build_tree(right_child, mid + 1, right);
 
-            new_node.fours = tree[left_child].fours + tree[right_child].fours;
-            new_node.sevens = tree[left_child].sevens + tree[right_child].sevens;
+            Node left_node = tree[left_child]; Node right_node = tree[right_child];
 
-            int case1 = tree[left_child].lis + tree[right_child].sevens;
-            int case2 = tree[left_child].fours + tree[right_child].lis;
-            int case3 = tree[left_child].fours + tree[right_child].sevens;
+            new_node.fours = left_node.fours + right_node.fours;
+            new_node.sevens = left_node.sevens + right_node.sevens;
 
-            new_node.lis = Math.max(Math.max(case1, case2), case3);
+            int case1 = left_node.lis + right_node.sevens;
+            int case2 = left_node.fours + right_node.lis;
+            new_node.lis = Math.max(case1, case2);
 
-            case1 = tree[left_child].lds + tree[right_child].fours;
-            case2 = tree[left_child].sevens + tree[right_child].lds;
-            case3 = tree[left_child].sevens + tree[right_child].fours;
-
-            new_node.lds = Math.max(Math.max(case1, case2), case3);
+            case1 = left_node.lds + right_node.fours;
+            case2 = left_node.sevens + right_node.lds;
+            new_node.lds = Math.max(case1, case2);
         }
 
         else {
@@ -84,55 +86,69 @@ class Solver_c145E {
             else
                 new_node.sevens = 1;
         }
-
         tree[node] = new_node;
     }
 
+
     void update(int node, int left, int right) {
-        if (left <= tree[node].left && right >= tree[node].right) {
-            Node swapped = tree[node].swap();
-            tree[node] = swapped;
+
+        Node this_node = tree[node];
+
+        if(lazy_swap[node]) {
+            this_node.swap();
+            lazy_swap[node * 2] = !lazy_swap[node * 2];
+            lazy_swap[node * 2 + 1] = !lazy_swap[node * 2 + 1];
+            lazy_swap[node] = false;
         }
-        else if(left > tree[node].right || right < tree[node].left) ;
+
+        if (left <= this_node.left && right >= this_node.right) {
+            this_node.swap();
+            lazy_swap[node * 2] = !lazy_swap[node * 2];
+            lazy_swap[node * 2 + 1] = !lazy_swap[node * 2 + 1];
+        }
+        
+        else if(left > this_node.right || right < this_node.left) ;
         else {
             int left_child = node * 2; int right_child = node * 2 + 1;
 
             update(left_child, left, right);
             update(right_child, left, right);
 
-            int case1 = tree[left_child].lis + tree[right_child].sevens;
-            int case2 = tree[left_child].fours + tree[right_child].lis;
-            int case3 = tree[left_child].fours + tree[right_child].sevens;
+            Node left_node = tree[left_child]; Node right_node = tree[right_child];
 
-            tree[node].lis = Math.max(Math.max(case1, case2), case3);
+            this_node.fours = left_node.fours + right_node.fours;
+            this_node.sevens = left_node.sevens + right_node.sevens;
 
-            case1 = tree[left_child].lds + tree[right_child].fours;
-            case2 = tree[left_child].sevens + tree[right_child].lds;
-            case3 = tree[left_child].sevens + tree[right_child].fours;
+            int case1 = left_node.lis + right_node.sevens;
+            int case2 = left_node.fours + right_node.lis;
+            this_node.lis = Math.max(case1, case2);
 
-            tree[node].lds = Math.max(Math.max(case1, case2), case3);
+            case1 = left_node.lds + right_node.fours;
+            case2 = left_node.sevens + right_node.lds;
+            this_node.lds = Math.max(case1, case2);
         }
     }
 
 
-    String solve() throws IOException {
+    StringBuilder solve() throws IOException {
         build_tree(1, 1, n);
-        String ans = "";
+        StringBuilder sb = new StringBuilder();
 
         for(int i = 1; i <= m; i++) {
             String new_line = br.readLine();
 
             if (new_line.equals("count")) {
-                ans = ans.concat(String.valueOf(tree[1].lis));
-                ans = ans.concat("\n");
+                sb.append(tree[1].lis);
+                sb.append("\n");
             }
             else {
-                st = new StringTokenizer(new_line);
-                st.nextToken();
-                update(1, Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()));
+                int pos = 7;
+                int end = new_line.indexOf(' ', pos);
+                int l = Integer.parseInt(new_line.substring(pos, end));
+                int r = Integer.parseInt(new_line.substring(end + 1));
+               update(1, l, r);
             }
         }
-        return ans;
+        return sb;
     }
 }
-
